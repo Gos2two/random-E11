@@ -11,7 +11,7 @@ rm(list = ls())
 # https://doi.org/10.7717/peerj.3414
 
 library(readr)
-
+library(dplyr)
 
 d_raw_case <- read_delim("Data/raw/data-case.csv", 
                          delim = ";", escape_double = FALSE, locale = locale(decimal_mark = ","), 
