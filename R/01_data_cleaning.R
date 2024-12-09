@@ -1,6 +1,7 @@
 ## Clear environment
-
+ 
 rm(list = ls())
+setwd("~/Desktop/random-E11")
 
 
 ## Data import
@@ -52,7 +53,6 @@ d_clean$`HOMA-b` <- scale(d_clean$`HOMA-b`)
 d_clean$`HOMA-IR` <- scale(d_clean$`HOMA-IR`)
 
 # Do one hot encoding for categoricals
-
 dummy_model <- dummyVars(~ `FTO [rs8050136]` +  `FTO [rs7202116]` + `FTO [rs9930506]` +  `KCNJ11 [rs5219]` + `SLC30A8 [rs13266634]` +  `CDKN2B [rs10811661]` + `CDKAL1 [rs7756992]` +  `CDKAL1 [rs9465871]` + `CDKAL1 [rs7754840]` +  `CDKAL1 [rs10946398]` , data = d_clean)
 one_hot <- predict(dummy_model, newdata = d_clean)
 
