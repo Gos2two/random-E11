@@ -1,4 +1,4 @@
-## 2. Logistic regression
+# 02_logistic_regression.R
 
 # Data source: 
 # Nikitin, A. G., et al. (2017). 
