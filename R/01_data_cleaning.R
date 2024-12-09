@@ -1,10 +1,11 @@
-## Clear environment
- 
+# 01_data_cleaning.R
+
+# Clear environment
 rm(list = ls())
 setwd("~/Desktop/random-E11")
 
 
-## Data import
+# Data import
 # Source: 
 # Nikitin, A. G., et al. (2017). 
 # Association of polymorphic markers of genes FTO, KCNJ11, CDKAL1, SLC30A8, and 
@@ -42,15 +43,21 @@ d_clean <- na.omit(d)
 ## Remove sample col
 d_clean <- select(d_clean,-Sample)
 
-# Data preparation
-d_clean$Age <- scale(d_clean$Age)
-d_clean$BMI <- scale(d_clean$BMI)
+# Data preparation (Normalization of numericals)
 d_clean$`Basal glucose level` <- scale(d_clean$`Basal glucose level`)
 d_clean$`Glucose level 2 h after PGTT` <- scale(d_clean$`Glucose level 2 h after PGTT`)
 d_clean$`Basal insulin level` <- scale(d_clean$`Basal insulin level`)
 d_clean$`Insulin level 2 h after PGTT` <- scale(d_clean$`Insulin level 2 h after PGTT`)
 d_clean$`HOMA-b` <- scale(d_clean$`HOMA-b`)
 d_clean$`HOMA-IR` <- scale(d_clean$`HOMA-IR`)
+# d_clean$Age <- scale(d_clean$Age)
+# d_clean$BMI <- scale(d_clean$BMI)
+scale_values <- preProcess(d_clean[, c("Age", "BMI")], method = c("center", "scale"))
+d_clean[, c("Age", "BMI")] <- predict(scale_values, d_clean[, c("Age", "BMI")])
+# Save the pre-processing object for future use in the API
+saveRDS(scale_values, "data/processed/scale_values.rds")
+
+
 
 # Do one hot encoding for categoricals
 dummy_model <- dummyVars(~ `FTO [rs8050136]` +  `FTO [rs7202116]` + `FTO [rs9930506]` +  `KCNJ11 [rs5219]` + `SLC30A8 [rs13266634]` +  `CDKN2B [rs10811661]` + `CDKAL1 [rs7756992]` +  `CDKAL1 [rs9465871]` + `CDKAL1 [rs7754840]` +  `CDKAL1 [rs10946398]` , data = d_clean)
@@ -66,86 +73,86 @@ names(d_clean) <- gsub("`", "",                      # Remove backticks
                   gsub("\\s", "_",                  # Replace spaces with underscores
                   gsub("/", "", names(d_clean))))) # Remove double quotes
 
-# Export d_clean as a CSV
+#* Export d_clean as a CSV
 write.csv(d_clean, file = "data/processed/d_clean.csv", row.names = FALSE)
 
 # --- Summary statistics
-
-# Age (DM2+) 
-mean(d_raw_case$Age, na.rm = TRUE)
-sd(d_raw_case$Age, na.rm = TRUE)
-hist(d_clean$Age)
-qqnorm(d_clean$Age)
-qqline(d_clean$Age, col = "red", lwd = 2)
-
-# Age (DM2−) 
-mean(d_raw_control$Age, na.rm = TRUE)
-sd(d_raw_control$Age, na.rm = TRUE)
-
-# BMI (DM2+) 
-mean(d_raw_case$BMI, na.rm = TRUE)
-sd(d_raw_case$BMI, na.rm = TRUE)
-hist(d_clean$BMI)
-qqnorm(d_clean$BMI)
-qqline(d_clean$BMI, col = "red", lwd = 2)
-
-# BMI (DM2−) 
-mean(d_raw_control$BMI, na.rm = TRUE)
-sd(d_raw_control$BMI, na.rm = TRUE)
-
-# Basal glucose level (DM2+) 
-mean(d_raw_case$`Basal glucose level`, na.rm = TRUE)
-sd(d_raw_case$`Basal glucose level`, na.rm = TRUE)
-hist(d_clean$`Basal glucose level`)
-qqnorm(d_clean$`Basal glucose level`)
-qqline(d_clean$`Basal glucose level`, col = "red", lwd = 2)
-
-# Basal glucose level (DM2−) 
-mean(d_raw_control$`Basal glucose level`, na.rm = TRUE)
-sd(d_raw_control$`Basal glucose level`, na.rm = TRUE)
-
-# Glucose level 2 h after PGTT (DM2+) 
-mean(d_raw_case$`Glucose level 2 h after PGTT`, na.rm = TRUE)
-sd(d_raw_case$`Glucose level 2 h after PGTT`, na.rm = TRUE)
-
-# Glucose level 2 h after PGTT (DM2−) 
-mean(d_raw_control$`Glucose level 2 h after PGTT`, na.rm = TRUE)
-sd(d_raw_control$`Glucose level 2 h after PGTT`, na.rm = TRUE)
-
-# Basal insulin level (DM2+)
-mean(d_raw_case$`Basal insulin level`, na.rm = TRUE)
-sd(d_raw_case$`Basal insulin level`, na.rm = TRUE)
-
-# Basal insulin level (DM2−) 
-mean(d_raw_control$`Basal insulin level`, na.rm = TRUE)
-sd(d_raw_control$`Basal insulin level`, na.rm = TRUE)
-
-# Insulin level 2 h after PGTT (DM2+)
-mean(d_raw_case$`Insulin level 2 h after PGTT`, na.rm = TRUE)
-sd(d_raw_case$`Insulin level 2 h after PGTT`, na.rm = TRUE)
-
-# Insulin level 2 h after PGTT (DM2−)
-mean(d_raw_control$`Insulin level 2 h after PGTT`, na.rm = TRUE)
-sd(d_raw_control$`Insulin level 2 h after PGTT`, na.rm = TRUE)
-
-# Glycated hemoglobin НbА1с (DM2+)
-mean(d_raw_case$`Glycated hemoglobin НbА1с`, na.rm = TRUE)
-sd(d_raw_case$`Glycated hemoglobin НbА1с`, na.rm = TRUE)
-
-# HOMA-b (DM2+)
-mean(d_raw_case$`HOMA-b`, na.rm = TRUE)
-sd(d_raw_case$`HOMA-b`, na.rm = TRUE)
-
-# HOMA-b (DM2−)
-mean(d_raw_control$`HOMA-b`, na.rm = TRUE)
-sd(d_raw_control$`HOMA-b`, na.rm = TRUE)
-
-# HOMA-IR (DM2+)
-mean(d_raw_case$`HOMA-IR`, na.rm = TRUE)
-sd(d_raw_case$`HOMA-IR`, na.rm = TRUE)
-
-# HOMA-IR (DM2−)
-mean(d_raw_control$`HOMA-IR`, na.rm = TRUE)
-sd(d_raw_control$`HOMA-IR`, na.rm = TRUE)
+# 
+# # Age (DM2+) 
+# mean(d_raw_case$Age, na.rm = TRUE)
+# sd(d_raw_case$Age, na.rm = TRUE)
+# hist(d_clean$Age)
+# qqnorm(d_clean$Age)
+# qqline(d_clean$Age, col = "red", lwd = 2)
+# 
+# # Age (DM2−) 
+# mean(d_raw_control$Age, na.rm = TRUE)
+# sd(d_raw_control$Age, na.rm = TRUE)
+# 
+# # BMI (DM2+) 
+# mean(d_raw_case$BMI, na.rm = TRUE)
+# sd(d_raw_case$BMI, na.rm = TRUE)
+# hist(d_clean$BMI)
+# qqnorm(d_clean$BMI)
+# qqline(d_clean$BMI, col = "red", lwd = 2)
+# 
+# # BMI (DM2−) 
+# mean(d_raw_control$BMI, na.rm = TRUE)
+# sd(d_raw_control$BMI, na.rm = TRUE)
+# 
+# # Basal glucose level (DM2+) 
+# mean(d_raw_case$`Basal glucose level`, na.rm = TRUE)
+# sd(d_raw_case$`Basal glucose level`, na.rm = TRUE)
+# hist(d_clean$`Basal glucose level`)
+# qqnorm(d_clean$`Basal glucose level`)
+# qqline(d_clean$`Basal glucose level`, col = "red", lwd = 2)
+# 
+# # Basal glucose level (DM2−) 
+# mean(d_raw_control$`Basal glucose level`, na.rm = TRUE)
+# sd(d_raw_control$`Basal glucose level`, na.rm = TRUE)
+# 
+# # Glucose level 2 h after PGTT (DM2+) 
+# mean(d_raw_case$`Glucose level 2 h after PGTT`, na.rm = TRUE)
+# sd(d_raw_case$`Glucose level 2 h after PGTT`, na.rm = TRUE)
+# 
+# # Glucose level 2 h after PGTT (DM2−) 
+# mean(d_raw_control$`Glucose level 2 h after PGTT`, na.rm = TRUE)
+# sd(d_raw_control$`Glucose level 2 h after PGTT`, na.rm = TRUE)
+# 
+# # Basal insulin level (DM2+)
+# mean(d_raw_case$`Basal insulin level`, na.rm = TRUE)
+# sd(d_raw_case$`Basal insulin level`, na.rm = TRUE)
+# 
+# # Basal insulin level (DM2−) 
+# mean(d_raw_control$`Basal insulin level`, na.rm = TRUE)
+# sd(d_raw_control$`Basal insulin level`, na.rm = TRUE)
+# 
+# # Insulin level 2 h after PGTT (DM2+)
+# mean(d_raw_case$`Insulin level 2 h after PGTT`, na.rm = TRUE)
+# sd(d_raw_case$`Insulin level 2 h after PGTT`, na.rm = TRUE)
+# 
+# # Insulin level 2 h after PGTT (DM2−)
+# mean(d_raw_control$`Insulin level 2 h after PGTT`, na.rm = TRUE)
+# sd(d_raw_control$`Insulin level 2 h after PGTT`, na.rm = TRUE)
+# 
+# # Glycated hemoglobin НbА1с (DM2+)
+# mean(d_raw_case$`Glycated hemoglobin НbА1с`, na.rm = TRUE)
+# sd(d_raw_case$`Glycated hemoglobin НbА1с`, na.rm = TRUE)
+# 
+# # HOMA-b (DM2+)
+# mean(d_raw_case$`HOMA-b`, na.rm = TRUE)
+# sd(d_raw_case$`HOMA-b`, na.rm = TRUE)
+# 
+# # HOMA-b (DM2−)
+# mean(d_raw_control$`HOMA-b`, na.rm = TRUE)
+# sd(d_raw_control$`HOMA-b`, na.rm = TRUE)
+# 
+# # HOMA-IR (DM2+)
+# mean(d_raw_case$`HOMA-IR`, na.rm = TRUE)
+# sd(d_raw_case$`HOMA-IR`, na.rm = TRUE)
+# 
+# # HOMA-IR (DM2−)
+# mean(d_raw_control$`HOMA-IR`, na.rm = TRUE)
+# sd(d_raw_control$`HOMA-IR`, na.rm = TRUE)
 
 
